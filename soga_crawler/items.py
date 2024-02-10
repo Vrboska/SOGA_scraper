@@ -16,6 +16,7 @@ class Aukcia(scrapy.Item):
     # define the fields for your item here like:
     id = scrapy.Field()
     nazov = scrapy.Field()
+    datum= scrapy.Field()
     popis = scrapy.Field()
     url = scrapy.Field()
 

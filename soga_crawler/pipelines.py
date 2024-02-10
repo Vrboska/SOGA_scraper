@@ -21,30 +21,32 @@ class AuctionPipeline(object):
         self.cursor = self.connection.cursor()
         self.cursor.execute('DROP TABLE IF EXISTS aukcie')
         self.cursor.execute('CREATE TABLE IF NOT EXISTS aukcie'\
-                    '(id VARCHAR(256) PRIMARY KEY, nazov VARCHAR(256), popis VARCHAR(256)'\
+                    '(id VARCHAR(256) PRIMARY KEY, nazov VARCHAR(256), popis VARCHAR(256), datum VARCHAR(256)'\
                     ',url VARCHAR(256))')
 
     # Take the item and put it in database - do not allow duplicates
     def process_item(self, item, spider):
-        self.cursor.execute("select * from auctions where id=?", (item['id'],))
-        result = self.cursor.fetchone()
-        if result:
-            log.msg("Item already in database: %s" % item, level=log.DEBUG)
-        else:
-            self.cursor.execute(
-                "insert into aukcie (id, nazov, popis, url) values (?, ?, ?, ?)",
-                    (item['id'], item['nazov'], item['popis'], item['url']))
+        if type(item).__name__=='Aukcia':
+            self.cursor.execute("select * from aukcie where id=?", (item['id'],))
+            result = self.cursor.fetchone()
+            if result:
+                log.msg("Item already in database: %s" % item, level=log.DEBUG)
+            else:
+                self.cursor.execute(
+                    "insert into aukcie (id, nazov, popis, datum, url) values (?, ?, ?, ?, ?)",
+                        (item['id'], item['nazov'], item['popis'], item['datum'], item['url']))
 
-            self.connection.commit()
+                self.connection.commit()
 
-            #log.msg("Item stored : " % item, level=log.DEBUG)
-        return item
+                #log.msg("Item stored : " % item, level=log.DEBUG)
+            return item
 
     def handle_error(self, e):
         log.err(e)
 
 class DieloPipeline(object):
     def __init__(self):
+
         # Possible we should be doing this in spider_open instead, but okay
         self.connection = sqlite.connect('./soga.db')
         self.cursor = self.connection.cursor()
@@ -59,19 +61,20 @@ class DieloPipeline(object):
 
     # Take the item and put it in database - do not allow duplicates
     def process_item(self, item, spider):
-        self.cursor.execute("select * from diela where id_aukcie=? and id_diela=?", (item['id_aukcie'],item['id_diela']))
-        result = self.cursor.fetchone()
-        if result:
-            log.msg("Item already in database: %s" % item, level=log.DEBUG)
-        else:
-            self.cursor.execute(
-                "insert into aukcie (id_aukcie, id_diela, autor, nazov, poradove_cislo, vydrazene,konecna_cena,vyvolavacia_cena,rok,technika,typ_diela,rozmery,url_soga, url_soga_obrazok) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    (item['id_aukcie'], item['id_diela'], item['autor'], item['nazov'], item['poradove_cislo'], item['vydrazene'], item['konecna_cena'], item['vyvolavacia_cena'], item['rok'], item['technika'], item['typ_diela'], item['rozmery'], item['url_soga'], item['url_soga_obrazok']))
+        if type(item).__name__=='Dielo':
+            self.cursor.execute("select * from diela where id_aukcie=? and id_diela=?", (item['id_aukcie'],item['id_diela']))
+            result = self.cursor.fetchone()
+            if result:
+                log.msg("Item already in database: %s" % item, level=log.DEBUG)
+            else:
+                self.cursor.execute(
+                    "insert into aukcie (id_aukcie, id_diela, autor, nazov, poradove_cislo, vydrazene,konecna_cena,vyvolavacia_cena,rok,technika,typ_diela,rozmery,url_soga, url_soga_obrazok) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (item['id_aukcie'], item['id_diela'], item['autor'], item['nazov'], item['poradove_cislo'], item['vydrazene'], item['konecna_cena'], item['vyvolavacia_cena'], item['rok'], item['technika'], item['typ_diela'], item['rozmery'], item['url_soga'], item['url_soga_obrazok']))
 
-            self.connection.commit()
+                self.connection.commit()
 
-            log.msg("Item stored : " % item, level=log.DEBUG)
-        return item
+                log.msg("Item stored : " % item, level=log.DEBUG)
+            return item
 
     def handle_error(self, e):
         log.err(e)

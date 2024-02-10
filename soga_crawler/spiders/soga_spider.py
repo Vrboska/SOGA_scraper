@@ -5,6 +5,8 @@ Created on Mon Mar  1 23:32:13 2021
 @author: hp
 """
 import scrapy
+import uuid
+
 from scrapy.loader import ItemLoader
 from soga_crawler.items import Aukcia,Dielo
 
@@ -21,24 +23,20 @@ class SogaSpider(scrapy.Spider):
         
         # for url in urls:
         #     print(url)
-        for url in urls:
-            request = scrapy.Request(url, callback=self.auction_page)
+        for url in urls[0:1]:
+            print(f'{url}')
+            request = scrapy.Request(url, callback=self.auction_main_page)
             yield request
-                
-        # for ta in response.xpath("//div[@class='consultants_list_data']//div[@class='item']"):
-        #     item = Tax_Advisor()
-        #     item['name']= ta.xpath("./h2/a/span/text()").get()
-        #     item['location']=ta.xpath("./div[@class='infos']/div[@class='inside']/div[@class='place']/text()").get()
-        #     item['location']=item['location'] and item['location'].replace('\r', '').replace('\t', '').replace('\n', '')
-        #     item['phone_number']=ta.xpath("./div[@class='infos']/div[@class='inside']/div[@class='phone']/text()").get()
-        #     item['phone_number']=item['phone_number'] and item['phone_number'].replace('\r', '').replace('\t', '').replace('\n', '')
-        #
-        #     item['email_address']=ta.xpath("./div[@class='infos']/div[@class='inside']/div[@class='email']/a/text()").get()
-        #     print(item)
-        #     yield item
 
         
-    def auction_page(self, response):
-        pass
-        
+    def auction_main_page(self, response):
+            item = Aukcia()
+            item['id']= str(uuid.uuid4())
+            item['nazov']=str(response.xpath("//div[@id='auction']/div[@class='auctionSlide']/div[@class='imgInfoWrapper']/div[@class='imgInfoContent']/text()").get())
+            item['datum']=str(response.xpath("//div[@id='auction']/div[@class='auctionSlide']/div[@class='imgInfoWrapper']/div[@class='imgInfoContent']/p[@class='date']/text()").get())
+            item['popis']=str(response.xpath("//div[@id='auction']/div[@class='auctionSlide']/div[@class='text']/text()").extract())
+            item['url']=response.url
+
+            print(item)
+            yield item
         
