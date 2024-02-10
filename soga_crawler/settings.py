@@ -1,4 +1,4 @@
-# Scrapy settings for kdpcr_crawler project
+# Scrapy settings for soga_crawler project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
